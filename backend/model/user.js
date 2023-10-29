@@ -17,6 +17,12 @@ const user = new db.Schema({
   password :{
     type : String,
     required: true
+  },
+  restPasswordToken :{
+    type :String
+  },
+  tokenExpired :{
+    type : String
   }
 });
  
