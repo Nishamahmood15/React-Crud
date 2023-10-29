@@ -1,5 +1,6 @@
 const userModel = require('../model/user');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 // createuser api
 const createUser=async (req,res)=>{
     try {
@@ -25,7 +26,7 @@ const getAllUser = async(req,res)=>{
     try {
         const user = await userModel.find({});
        
-        res.status(201).json(user);     
+        res.status(200).json(user);     
     } catch (error) {
         res.status(500).json({error:error.message});
     }
@@ -36,7 +37,7 @@ const deleteUser = async(req,res)=>{
     try {
         const user = req.params.id;
         const del=await userModel.findByIdAndDelete(user);
-        res.status(201).json('user deleted successfully');
+        res.status(200).json('user deleted successfully');
     } catch (error) {
         res.status(500).json({error:error.message});
     }
@@ -45,7 +46,7 @@ const deleteUser = async(req,res)=>{
 const updateUser = async(req,res)=>{
     try {
         const user = await userModel.findByIdAndUpdate(req.params.id,req.body,{new:true})
-        res.status(201).json('user updated successfully');
+        res.status(200).json('user updated successfully');
     } catch (error) {
         res.status(500).json({error:error.message});
     }
@@ -55,16 +56,42 @@ const getDataByQuerry = async(req,res)=>{
     try {
         const user = await userModel.findOne({email:req.query.email});
         
-        res.status(201).json(user);
+        res.status(200).json(user);
     } catch (error) {
         res.status(500).json({error:error.message});
     }
 }
-
+//get single data and update by params
+const getAndUpdateByParams = async(req,res)=>{
+    try {
+        const user = await userModel.findOneAndUpdate({name:req.params.name},req.body,{new:true});
+        
+        res.status(200).json("Updation successfull")
+    } catch (error) {
+        res.status(500).json({error:error.message})
+    }
+}
+//login system apis
+const loginSystem = async(req,res)=>{
+    try {
+        const {email,password} = req.body;
+        const user = await userModel.findOne({email});
+        if(user && (await bcrypt.compare(password,user.password))){
+            const token = jwt.sign({userId:user.id},"LDUyfHQNq5qggRxsLjrutYqVkBxj6nXv",{expiresIn:"1 hr"})
+        res.status(200).json({token});      
+        }
+        
+    } catch (error) {
+        res.status(500).json({error:error.message})
+    }
+}
+//
 module.exports = {
     createUser,
     getAllUser,
     deleteUser,
     updateUser,
-    getDataByQuerry
+    getDataByQuerry,
+    getAndUpdateByParams,
+    loginSystem
 };  //destructuring the object of createUser
