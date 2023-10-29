@@ -9,7 +9,7 @@ router.put('/updateUser/:id',userController.updateUser);
 router.get('/getSingleUser',userController.getDataByQuerry);
 router.put('/getUpdateUserByParams/:name',userController.getAndUpdateByParams);
 router.post('/login',userController.loginSystem);
-router.post('/forgetPass',userController.forgetPassword);
+router.post('/forgetPass',userController.forgotPassword);
 
 
 

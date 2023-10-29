@@ -18,7 +18,7 @@ const user = new db.Schema({
     type : String,
     required: true
   },
-  restPasswordToken :{
+  resetPasswordToken :{
     type :String
   },
   tokenExpired :{

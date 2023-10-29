@@ -1,8 +1,8 @@
+const nodeMailer = require("nodemailer");
 const userModel = require("../model/user");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const nodeMailer = require("nodemailer");
 // createuser api
 const createUser = async (req, res) => {
   try {
@@ -97,58 +97,67 @@ const loginSystem = async (req, res) => {
   }
 };
 // forget password apis
-const forgetPassword = async (req, res) => {
+const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
-    const user = await userModel.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ error: "user not found" });
-    }
-    const resettoken = resetToken();
-    user.restPasswordToken = resettoken; //token saved to database
-    user.tokenExpired = Date.now() + 3600;
-    await user.save();
-    const forgetLink = `http://localhost:5000/user/resetPassword?token=${resettoken}`;
-    const mailOptions = {
-      from: "Nishamahmood97@outlook.com",
-      to: user.email,
-      subject: "Password Reset",
-      text: `Click the following link to reset your password: ${forgetLink}`,
-    };
+    const myuser = await userModel.findOne({ email });
 
-    const transporter = nodeMailer.createTransport({
-      host: "smtp-mail.outlook.com",
+    if (!myuser) {
+      return res.status(404).json({ error: 'User not found in record' });
+    }
+
+    const resetToken = generateResetToken();
+    console.log('Reset Token:', resetToken);
+   myuser.resetPasswordToken  = resetToken;
+    myuser.tokenExpired = Date.now() + 1500000;
+ 
+    await myuser.save();
+
+    const resetLink = `http://localhost:5000/user/resetPassword?token=${resetToken}`;
+    const mailOptions = {
+      from: 'Nishamahmood97@outlook.com',
+      to: myuser.email, 
+      subject: 'Password Reset',
+      text: `Click the following link to reset your password: ${resetLink}`,
+    };
+   
+
+    const transport = nodeMailer.createTransport({
+      host: 'smtp-mail.outlook.com',
       port: 587,
-      secure: false, // TLS
+      secure: false, // Use TLS
       auth: {
-        user: "Nishamahmood97@outlook.com",
-        pass: "nishaelaaf143",
+        user: 'Nishamahmood97@outlook.com',
+        pass: 'nishaelaaf143'
       },
+    
     });
+   
 
     // Send the email
-    transporter.sendMail(mailOptions, (error, info) => {
+    transport.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error(error);
-        return res.status(500).json({ error: "Failed to send reset email" });
+        return res.status(500).json({ error: 'Failed to send reset email' });
       } else {
-        console.log("Email sent: " + info.response);
-        res
-          .status(200)
-          .json({ message: "Password reset email sent successfully" });
+        console.log('Email sent: ' + info.response);
+        res.status(200).json({ message: 'Password reset email sent successfully' });
       }
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });
   }
-};
-//generating token
-const resetToken = () => {
-  const buffer = crypto.randomBytes(32); //generate 32 bit key
-  const token = buffer.toString("hex"); //converting token into string
+}
+
+const generateResetToken = () => {
+  const buffer = crypto.randomBytes(32);
+  const token = buffer.toString('hex');
   return token;
-};
+}
+
+
+
 module.exports = {
   createUser,
   getAllUser,
@@ -157,5 +166,5 @@ module.exports = {
   getDataByQuerry,
   getAndUpdateByParams,
   loginSystem,
-  forgetPassword,
+  forgotPassword,
 }; //destructuring the object of createUser
